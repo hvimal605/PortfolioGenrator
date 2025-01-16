@@ -1,7 +1,7 @@
 
 const cloudinary = require('cloudinary');
 const { uploadImageToCloudinary } = require('../utils/imageUploadToCloudinary');
-const project = require('../models/project');
+const project = require('../models/Project');
 const Portfolio = require('../models/Portfolio');
 
 exports.addNewProject = async (req, res) => {

@@ -2,13 +2,19 @@ const express = require("express");
 const router = express.Router();
 
 const { auth } = require("../middlewares/auth");
-const { createSite, deployPortfolio } = require("../controller/deploy");
+const {  deployPortfolio, updatelink} = require("../controller/deploy");
+const { uploadFolder } = require("../controller/UploadFolder");
+
+
+
 
 
 
 
 
 router.post("/deployPortfolio", auth , deployPortfolio);
-router.post("/createSite",createSite)
+router.patch("/updatelink", auth , updatelink);
+// router.post("/createSite",createSite)
+router.post("/UploadZip", uploadFolder);
 
 module.exports = router;

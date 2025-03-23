@@ -14,6 +14,11 @@ const TemplateSchema = new mongoose.Schema({
     type: String, 
     required: true,
   },
+  // previewImage:{
+  //   type: String, 
+  //   required: true,
+
+  // },
   supportedColors: {
     type: [String], 
     default: [],
@@ -23,8 +28,8 @@ const TemplateSchema = new mongoose.Schema({
     enum: ["Single Page", "Multi Page", "Dark Theme", "Light Theme", "Minimal"],
     default: "Single Page",
   },
-  fields: {
-    type: [String], 
+  TemplateLink:{
+    type: String, 
     required: true,
   },
   isActive: {

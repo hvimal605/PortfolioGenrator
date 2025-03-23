@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
     },
     accountType: {
         type: String,
-        enum: ['Admin', 'User'],
+        enum: ['Admin', 'User','Developer'],
         required: true,
     },
     portfolio: {

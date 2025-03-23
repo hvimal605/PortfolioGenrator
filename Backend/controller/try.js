@@ -7,6 +7,7 @@ const Portfolio = require('../models/Portfolio'); // Assuming your portfolio mod
 const archiver = require('archiver');
 const { default: mongoose } = require('mongoose');
 
+
 // Route to create a new site on Netlify
 exports.createSite = async (req, res) => {
     try {
@@ -57,7 +58,7 @@ exports.createSite = async (req, res) => {
 
 exports.deployPortfolio = async (req, res) => {
     try {
-        const { portfolioId } = req.body; 
+        const { portfolioId , templatename } = req.body;
         if (!portfolioId) {
             return res.status(404).send('portfolioId mandatory');
         }
@@ -71,26 +72,27 @@ exports.deployPortfolio = async (req, res) => {
             .populate("projects")
             .populate("softwareApplications")
             .populate("timeline")
-            .lean(); 
+            .lean();
 
         if (!portfolioData) {
             return res.status(404).send('Portfolio data not found');
         }
 
-        const htmlContent = generateHTML(portfolioData);
+        const htmlContent = generateHTML(portfolioId , templatename);
 
-        const filePath = path.join(__dirname, 'public', 'index.html');
-        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        const publicDir = path.join(__dirname, 'public');
+        const filePath = path.join(publicDir, 'index.html');
+        fs.mkdirSync(publicDir, { recursive: true });
 
         fs.writeFileSync(filePath, htmlContent);
         console.log('HTML file generated!');
 
-        const zipPath = path.join(__dirname, 'public', 'portfolio.zip');
+        const zipPath = path.join(publicDir, 'portfolio.zip');
         const zip = archiver('zip', { zlib: { level: 9 } });
         const output = fs.createWriteStream(zipPath);
 
         zip.pipe(output);
-        zip.directory(path.join(__dirname, 'public'), false);
+        zip.directory(publicDir, false);
         zip.finalize();
 
         await new Promise((resolve, reject) => {
@@ -101,9 +103,16 @@ exports.deployPortfolio = async (req, res) => {
 
         const siteId = await deployToNetlify(zipPath);
 
+        // Cleanup: delete ZIP file and public folder
+        fs.unlinkSync(zipPath); // Delete the ZIP file
+        console.log('ZIP file deleted!');
+
+        fs.rmdirSync(publicDir, { recursive: true }); // Delete the public folder
+        console.log('Public folder deleted!');
+
         res.json({
             message: 'Portfolio deployed successfully!',
-            deployLink: `https://${siteId}.netlify.app`,
+            deployLink: `https://${siteId}/${portfolioId}.netlify.app`,
         });
     } catch (error) {
         console.error('Error generating and deploying portfolio:', error);
@@ -112,58 +121,18 @@ exports.deployPortfolio = async (req, res) => {
 };
 
 
-// Function to generate HTML from portfolio data
-function generateHTML(portfolioData) {
-    return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Portfolio</title>
-      <style>
-        body { font-family: Arial, sans-serif; }
-        .profile { text-align: center; }
-        .profile img { width: 150px; border-radius: 50%; }
-        .skills ul, .projects ul { list-style-type: none; padding: 0; }
-      </style>
-    </head>
-    <body>
-      <div class="profile">
-        <img src="${portfolioData.profileImage}" alt="Profile Image">
-        <h1>${portfolioData.userId} Portfolio</h1>
-      </div>
-      
-      <div class="skills">
-        <h2>Skills</h2>
-        <ul>
-          ${portfolioData.skills.map(skill => `<li>${skill}</li>`).join('')}
-        </ul>
-      </div>
 
-      <div class="projects">
-        <h2>Projects</h2>
-        <ul>
-          ${portfolioData.projects.map(project => `<li>${project}</li>`).join('')}
-        </ul>
-      </div>
-
-      <div class="contact">
-        <h2>Contact</h2>
-        <p>Email: ${portfolioData.contactDetails.email}</p>
-        <p>Phone: ${portfolioData.contactDetails.phone}</p>
-      </div>
-
-      <div class="social-links">
-        <h2>Social Links</h2>
-        <p><a href="${portfolioData.socialLinks.linkedIn}">LinkedIn</a></p>
-        <p><a href="${portfolioData.socialLinks.github}">GitHub</a></p>
-        <p><a href="${portfolioData.socialLinks.twitter}">Twitter</a></p>
-      </div>
-    </body>
-    </html>
-  `;
-}
+function generateHTML(portfolioId, templatename) {
+    try {
+      const template = require(`../templates/${templatename}`);
+      return template(portfolioId);
+    } catch (error) {
+      console.error(`Error loading template "${templatename}":`, error.message);
+      return `Error: Template "${templatename}" not found.`;
+    }
+  }
+  
+ 
 
 // Function to deploy the ZIP file to Netlify
 async function deployToNetlify(zipPath) {

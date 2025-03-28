@@ -70,11 +70,11 @@ const { uploadImageToCloudinary } = require("../utils/imageUploadToCloudinary");
 
 
 // Configure Cloudinary
-cloudinary.config({
-  cloud_name: "dykhwoa5a",
-  api_key: "469216213695115",
-  api_secret: "KEy7tFw-PeT2K7SJRKeLPQ9tuCc",
-});
+// cloudinary.config({
+//   cloud_name: "",
+//   api_key: "",
+//   api_secret: "",
+// });
 
 // Upload extracted files to Cloudinary
 async function uploadExtractedFiles(tempDir, cloudinaryFolder) {

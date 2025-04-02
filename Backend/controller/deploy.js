@@ -63,6 +63,18 @@ exports.deployPortfolio = async (req, res) => {
             return res.status(400).json({ message: "Invalid URL protocol. Please use https://" });
         }
 
+        if (!PortfolioId) {
+            return res.status(400).json({ message: "Portfolio ID is required." });
+        }
+
+        const portfolio = await Portfolio.findById(PortfolioId);
+        if (!portfolio) {
+            return res.status(404).json({ message: "Portfolio not found." });
+        }
+
+        const { slug } = portfolio;
+
+
         // Download the ZIP file from Cloudinary
         const zipFileName = `${Date.now()}-${uuidv4()}.zip`;
         const zipPath = path.join(__dirname, zipFileName);
@@ -94,13 +106,13 @@ exports.deployPortfolio = async (req, res) => {
 
                     const PortfolioIdUpdate = await Portfolio.findByIdAndUpdate(PortfolioId,
 
-                        {deployLink:`https://${deployResponse.data.links.alias}.netlify.app/${PortfolioId}`},
+                        {deployLink:`${deployResponse.data.links.alias}/${slug}`},
                         {new:true}
                     )
 
                     return res.status(200).json({
                         message: "Portfolio deployed successfully!",
-                        deployLink: `${deployResponse.data.links.alias}/${PortfolioId}`,
+                        deployLink: `${deployResponse.data.links.alias}/${slug}`,
                     });
                 } catch (uploadError) {
                     console.error("Error uploading to Netlify:", uploadError);

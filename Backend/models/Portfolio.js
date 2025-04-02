@@ -15,6 +15,13 @@ const portfolioSchema = new mongoose.Schema({
     type: String,
    
   },
+  FirstName:{
+    type:String,
+    required:true,
+  },
+  LastName:{
+    type:String
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -70,6 +77,7 @@ const portfolioSchema = new mongoose.Schema({
       type: String, 
      
     },
+    
   },
   projects: [
     {
@@ -89,6 +97,13 @@ const portfolioSchema = new mongoose.Schema({
       ref: "Timeline", 
     },
   ],
+  slug: { type: String, unique: true, required: true },
 });
+
+
+
+
+
+
 
 module.exports = mongoose.model("Portfolio", portfolioSchema);

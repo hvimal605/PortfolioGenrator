@@ -6,16 +6,60 @@ const https = require("https");
 
 const Portfolio = require("../models/Portfolio");
 
+exports.createSite = async (req, res) => {
+    try {
+        // Generate a unique name for the site using the current timestamp
+        const uniqueName = `my-new-site-${Date.now()}`;
+
+        const response = await axios.post(
+            "https://api.netlify.com/api/v1/sites",
+            {
+                name: uniqueName,  // Use the unique site name
+                // custom_domain: "www.example.com", // Optional: Set a custom domain (if needed)
+                // password: "yourpassword", // Optional: Password protect the site (if needed)
+                // force_ssl: true, // Optional: Force SSL (set to true if you want SSL enabled)
+                processing_settings: {
+                    html: { pretty_urls: true }, // Optional: Enable pretty URLs
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.NETLIFY_ACCESS_TOKEN}`, // Replace with your Netlify access token
+                },
+            }
+        );
+
+        console.log("Site created successfully:", response.data);
+
+        // Send the site data as a response to the client
+        res.status(200).json({
+            success: true,
+            message: "Site created successfully",
+            data: response.data, // Site information returned by Netlify API
+        });
+    } catch (error) {
+        console.error("Error creating site:", error.response ? error.response.data : error.message);
+
+        // Send an error response if the creation fails
+        res.status(500).json({
+            success: false,
+            message: "Error creating site",
+            error: error.response ? error.response.data : error.message,
+            stack: error.stack, // Optionally include the error stack for more detailed debugging
+        });
+    }
+};
+
 exports.deployPortfolio = async (req, res) => {
     try {
-        const { deploy, PortfolioId } = req.body;
-
-        if (!deploy) {
+        const { TemplateLink , PortfolioId } = req.body;
+        
+        if (!TemplateLink) {
             return res.status(400).json({ message: "Cloudinary ZIP file URL is required." });
         }
 
         // Validate the URL protocol
-        if (!deploy.startsWith('https://')) {
+        if (!TemplateLink.startsWith('https://')) {
             return res.status(400).json({ message: "Invalid URL protocol. Please use https://" });
         }
 
@@ -24,7 +68,7 @@ exports.deployPortfolio = async (req, res) => {
         const zipPath = path.join(__dirname, zipFileName);
 
         const fileStream = fs.createWriteStream(zipPath);
-        https.get(deploy, (response) => {
+        https.get(TemplateLink, (response) => {
             response.pipe(fileStream);
 
             fileStream.on('finish', async () => {
@@ -43,18 +87,20 @@ exports.deployPortfolio = async (req, res) => {
                         }
                     );
 
+                    // console.log("ye hai deployResponse",deployResponse.data.links.alias)
+
                     // Clean up local ZIP file after deployment
                     fs.unlinkSync(zipPath);
 
                     const PortfolioIdUpdate = await Portfolio.findByIdAndUpdate(PortfolioId,
 
-                        {deployLink:`https://${deployResponse.data.site_id}.netlify.app`},
+                        {deployLink:`https://${deployResponse.data.links.alias}.netlify.app/${PortfolioId}`},
                         {new:true}
                     )
 
                     return res.status(200).json({
                         message: "Portfolio deployed successfully!",
-                        deployLink: `https://${deployResponse.data.site_id}.netlify.app`,
+                        deployLink: `${deployResponse.data.links.alias}/${PortfolioId}`,
                     });
                 } catch (uploadError) {
                     console.error("Error uploading to Netlify:", uploadError);

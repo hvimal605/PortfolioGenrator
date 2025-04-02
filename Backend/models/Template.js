@@ -14,11 +14,15 @@ const TemplateSchema = new mongoose.Schema({
     type: String, 
     required: true,
   },
-  // previewImage:{
-  //   type: String, 
-  //   required: true,
+  previewImage:{
+    type: String, 
+    required: true,
 
-  // },
+  },
+  CreatedBy:{
+    type: String, 
+    required: true,
+  },
   supportedColors: {
     type: [String], 
     default: [],

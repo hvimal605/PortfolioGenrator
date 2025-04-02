@@ -25,18 +25,17 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(
     cors({
-        origin:"*",
+        origin: "*",
         credentials: true,
     })
-);
-
+)
 
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
     fileUpload({
-        useTempFiles: true,
-        tempFileDir: '/tmp',
+        useTempFiles:true,
+        tempFileDir:'/tmp',
     })
 )
 

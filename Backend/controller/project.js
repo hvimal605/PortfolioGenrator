@@ -20,21 +20,28 @@ exports.addNewProject = async (req, res) => {
             description,
             gitRepoLink,
             projectLink,
-            stack,
+            
             technologies,
             deployed,
             portfolioId
 
         } = req.body;
 
+        console.log("dekhe ky NHI ARAH H ", title,
+            description,
+            gitRepoLink,
+            projectLink,
+           
+            technologies,
+          portfolioId)
+
         if (
             !title ||
             !description ||
             !gitRepoLink ||
             !projectLink ||
-            !stack ||
-            !technologies ||
-            !deployed
+           
+            !technologies
         ) {
             return res.status(400).json({
                 success: false,
@@ -55,7 +62,7 @@ exports.addNewProject = async (req, res) => {
             description,
             gitRepoLink,
             projectLink,
-            stack,
+           
             technologies,
             deployed,
             projectBanner: {

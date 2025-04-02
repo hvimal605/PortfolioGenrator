@@ -28,11 +28,11 @@ const UserSchema = new mongoose.Schema({
         enum: ['Admin', 'User','Developer'],
         required: true,
     },
-    portfolio: {
+    portfolios: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Portfolio",
         
-    },
+    }],
     deployLink: {
         type: String,
         

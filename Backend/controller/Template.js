@@ -69,14 +69,9 @@ const path = require("path");
 const { uploadImageToCloudinary } = require("../utils/imageUploadToCloudinary");
 
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: "dykhwoa5a",
-  api_key: "469216213695115",
-  api_secret: "KEy7tFw-PeT2K7SJRKeLPQ9tuCc",
-});
 
-// Upload extracted files to Cloudinary
+
+//  Upload extracted files to Cloudinary
 async function uploadExtractedFiles(tempDir, cloudinaryFolder) {
   const uploadedUrls = [];
   const files = fs.readdirSync(tempDir);
@@ -104,16 +99,17 @@ exports.createNewTemplate = async (req, res) => {
       previewUrl,
       supportedColors = [],
       layoutType = "Single Page",
+      CreatedBy,
       
     } = req.body;
 
-  //   if (!req.files || !req.files.previewImg) {
-  //     return res.status(400).json({
-  //         success: false,
-  //         message: "Template Preview  Image Required!"
-  //     });
-  // }
-    // const { previewImg } = req.files;
+    if (!req.files || !req.files.previewImg) {
+      return res.status(400).json({
+          success: false,
+          message: "Template Preview  Image Required!"
+      });
+  }
+    const { previewImg } = req.files;
     // Validate required fields
     if (!name || !description || !previewUrl) {
       return res.status(400).json({
@@ -172,7 +168,7 @@ exports.createNewTemplate = async (req, res) => {
         .pipe(unzipper.Extract({ path: tempDir }))
         .promise()
         .then(async () => {
-          const cloudinaryFolder = "HelloJi"; // Replace with your desired folder name
+          const cloudinaryFolder = process.env.FOLDER_NAME_ZIP_FILE; 
 
           // Upload extracted files to Cloudinary
           const uploadedUrls = await uploadExtractedFiles(
@@ -186,12 +182,12 @@ exports.createNewTemplate = async (req, res) => {
           // Use the first uploaded URL as the template link
           const templateLink = uploadedUrls[0];
         
-          // const image = await uploadImageToCloudinary(
-          //             previewImg,
-          //             process.env.FOLDER_NAME,
-          //             1000,
-          //             10001
-          //         ); 
+          const image = await uploadImageToCloudinary(
+                      previewImg,
+                      process.env.FOLDER_NAME,
+                      1000,
+                      10001
+                  ); 
           // Create new template
           const newTemplate = new Template({
             name,
@@ -200,10 +196,8 @@ exports.createNewTemplate = async (req, res) => {
             supportedColors,
             layoutType,
             TemplateLink: templateLink,
-          //   previewImage: {
-          //     public_id: image.public_id,
-          //     url: image.secure_url,
-          // },
+            previewImage:image.secure_url,
+            CreatedBy
           });
 
           const savedTemplate = await newTemplate.save();

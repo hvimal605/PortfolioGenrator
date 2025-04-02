@@ -6,14 +6,14 @@ const cloudinary = require("cloudinary")
 
 exports.addSkill = async (req, res) => {
     try {
-        if (!req.files || !req.files.svg) {
+        if (!req.files || !req.files.skillSvg) {
             return res.status(400).json({
                 success: false,
                 message: "SVG is required!"
             });
         }
 
-        const { svg } = req.files;
+        const { skillSvg } = req.files;
         const { title, proficiency, portfolioId } = req.body;
 
         if (!title || !proficiency) {
@@ -24,7 +24,7 @@ exports.addSkill = async (req, res) => {
         }
 
         const image = await uploadImageToCloudinary(
-            svg,
+            skillSvg,
             process.env.FOLDER_NAME,
             1000,
             1000

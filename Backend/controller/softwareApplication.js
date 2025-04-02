@@ -8,14 +8,14 @@ const cloudinary = require("cloudinary")
 
 exports.addNewApplication = async (req, res) => {
     try {
-        if (!req.files || !req.files.svg) {
+        if (!req.files || !req.files.applicationSvg) {
             return res.status(400).json({
                 success: false,
                 message: "SVG is required!"
             });
         }
 
-        const { svg } = req.files;
+        const { applicationSvg } = req.files;
         const { name, portfolioId } = req.body;
 
         if (!name) {
@@ -26,7 +26,7 @@ exports.addNewApplication = async (req, res) => {
         }
 
         const image = await uploadImageToCloudinary(
-            svg,
+            applicationSvg,
             process.env.FOLDER_NAME,
             1000,
             1000

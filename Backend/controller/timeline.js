@@ -5,7 +5,7 @@ const Timeline = require("../models/timeline")
 exports.createTimeline = async (req, res) => {
     try {
         const { title, description, from, to, portfolioId } = req.body;
-
+    //  console.log("yha ky seen h ",title, description, from, to, portfolioId )
 
         if (!title || !description || !from || !to || !portfolioId) {
             return res.status(400).json({

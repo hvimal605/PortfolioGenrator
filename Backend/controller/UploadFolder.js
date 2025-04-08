@@ -5,11 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Configure Cloudinary
-cloudinary.config({
-    cloud_name: 'dykhwoa5a',
-    api_key: '469216213695115',
-    api_secret: 'KEy7tFw-PeT2K7SJRKeLPQ9tuCc',
-});
+
 
 // Upload extracted files to Cloudinary
 async function uploadExtractedFiles(tempDir, cloudinaryFolder) {

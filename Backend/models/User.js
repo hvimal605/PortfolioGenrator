@@ -21,8 +21,11 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-    },
+        required: function () {
+          return !this.googleAuth;
+        },
+      }
+      ,
     accountType: {
         type: String,
         enum: ['Admin', 'User','Developer'],
@@ -42,11 +45,21 @@ const UserSchema = new mongoose.Schema({
         ref: "Template",
        
     },
+    requestedTemplate: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DeveloperTemplateRequest",
+       
+    }],
     image:{
         type:String,
         required:true,
 
     },
+    googleAuth: {
+        type: Boolean,
+        default: false,
+      },
+      
     token:{
         type:String,
     },

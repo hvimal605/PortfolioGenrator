@@ -7,6 +7,7 @@ const portfolioRoutes = require("./routes/portfolio")
 const deployRoutes = require("./routes/deploy")
 const skillRoutes = require("./routes/skills")
 const projectRoutes = require("./routes/Project")
+const messageRoutes = require("./routes/message")
 const softwareApplicationRoutes = require("./routes/softwareApplication")
 const database = require("./config/database")
 const cookieParser = require("cookie-parser");
@@ -50,6 +51,7 @@ app.use("/api/v1/skill", skillRoutes)
 app.use("/api/v1/softwareApplication",softwareApplicationRoutes)
 app.use("/api/v1/project",projectRoutes)
 app.use("/api/v1/deploy",deployRoutes)
+app.use("/api/v1/message",messageRoutes)
 
 
 app.get("/", (req, res) => {

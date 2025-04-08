@@ -3,24 +3,24 @@ const mongoose = require("mongoose");
 const portfolioSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", 
+    ref: "User",
     required: true,
   },
   templateId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Template", 
+    ref: "Template",
     required: true,
   },
   deployLink: {
     type: String,
-   
+
   },
-  FirstName:{
-    type:String,
-    required:true,
+  FirstName: {
+    type: String,
+    required: true,
   },
-  LastName:{
-    type:String
+  LastName: {
+    type: String
   },
   createdAt: {
     type: Date,
@@ -30,75 +30,100 @@ const portfolioSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  
+
   // Portfolio Details
   profileImage: {
-    type: String, 
-   
+    type: String,
+
   },
   skills: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Skill", 
+      ref: "Skill",
     },
   ],
   resume: {
-    type: String, 
+    type: String,
 
   },
   contactDetails: {
     phone: {
-      type: String, 
-      
+      type: String,
+
     },
     email: {
-      type: String, 
-     
+      type: String,
+
     },
     address: {
-      type: String, 
-    
+      type: String,
+
     },
   },
   socialLinks: {
     linkedIn: {
-      type: String, 
-     
+      type: String,
+
     },
     github: {
-      type: String, 
-     
+      type: String,
+
     },
     twitter: {
-      type: String, 
-      
+      type: String,
+
     },
     personalWebsite: {
-      type: String, 
-     
+      type: String,
+
     },
-    
+
   },
   projects: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Project", 
+      ref: "Project",
     },
   ],
   softwareApplications: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SoftwareApplication", 
+      ref: "SoftwareApplication",
     },
   ],
   timeline: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Timeline", 
+      ref: "Timeline",
     },
   ],
-  slug: { type: String, unique: true, required: true },
+  slug: {
+    type: String,
+    unique: true,
+    required: true
+  },
+
+  totalVisitors: {
+    type: Number,
+    default: 0,
+  },
+  uniqueVisitors: {
+    type: Number,
+    default: 0,
+  },
+  messages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message",
+}],
+emailNotifications: {
+  type: Boolean,
+  default: true
+}
+
+
+
 });
+
 
 
 

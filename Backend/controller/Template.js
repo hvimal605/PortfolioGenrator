@@ -1,4 +1,6 @@
 const Template = require("../models/Template");
+const DeveloperTemplateRequest = require("../models/TemplateReqByDev");
+const Portfolio = require("../models/Portfolio");
 
 // exports.createNewTemplate = async (req, res) => {
 //     try {
@@ -67,6 +69,11 @@ const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const path = require("path");
 const { uploadImageToCloudinary } = require("../utils/imageUploadToCloudinary");
+const User = require("../models/User");
+const mailSender = require("../utils/mailSender");
+const templateApprovedMail = require("../mail/templates/TemplateApprovalEmail");
+const templateRejectedMail = require("../mail/templates/TemplateRejection");
+const templateReceivedMail = require("../mail/templates/TemplateRecieveMail");
 
 
 
@@ -360,4 +367,334 @@ exports.updateTemplate = async (req, res) => {
         });
     }
 };
+
+
+
+
+exports.createDeveloperTemplateRequest = async (req, res) => {
+  try {
+    const { name, description, previewUrl } = req.body;
+    const { zipFile } = req.files;
+    const createdBy = req.user.id;
+
+    if (!zipFile || !name || !description || !previewUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields (ZIP file, name, description, previewUrl) are required.",
+      });
+    }
+
+    // Temp dir
+    const tempDir = path.join(__dirname, "../temp-upload");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+    const zipPath = path.join(tempDir, "uploaded.zip");
+
+    zipFile.mv(zipPath, async (err) => {
+      if (err) {
+        console.error("ZIP save error:", err);
+        return res.status(500).json({ success: false, message: "Error saving ZIP file." });
+      }
+
+      // Extract and upload
+      fs.createReadStream(zipPath)
+        .pipe(unzipper.Extract({ path: tempDir }))
+        .promise()
+        .then(async () => {
+          const uploadedUrls = await uploadExtractedFiles(
+            tempDir,
+            process.env.FOLDER_NAME_ZIP_FILE_dev
+          );
+
+          fs.rmSync(tempDir, { recursive: true, force: true });
+
+          const request = await DeveloperTemplateRequest.create({
+            name,
+            description,
+            previewUrl,
+            uploadedUrl: uploadedUrls[0], // Use the first file as entry point
+            createdBy,
+          });
+          
+          await User.findByIdAndUpdate(
+            createdBy,
+            { $push: { requestedTemplate: request._id } },
+            { new: true }
+          );
+          
+          const user =await User.findById(createdBy);
+          const devEmail = user.email;
+          const devName = user.firstName + " " +  user.lastName;
+           await mailSender(devEmail ,  "🎨 Template Submission Received!",templateReceivedMail(devName ,name))
+
+          res.status(201).json({
+            success: true,
+            message: "Template request submitted successfully!",
+            request,
+          });
+        })
+        .catch((error) => {
+          console.error("Extraction error:", error);
+          return res.status(500).json({ success: false, message: "ZIP extraction failed." });
+        });
+    });
+  } catch (error) {
+    console.error("Template Request Error:", error);
+    res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+
+exports.reviewDeveloperTemplate = async (req, res) => {
+  try {
+    const { templateId } = req.body;
+    const { action } = req.body; 
+
+    if (!["Approved", "Rejected"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "Action must be either 'Approved' or 'Rejected'.",
+      });
+    }
+
+    // Find the request
+    const request = await DeveloperTemplateRequest.findById(templateId);
+    if (!request) {
+      return res.status(404).json({ success: false, message: "Request not found." });
+    }
+
+    // Update the request
+    request.status = action;
+    request.reviewedAt = new Date();
+    await request.save();
+
+    if (action == "Approved") {
+      const devId = request.createdBy;
+      
+     const developer = await User.findById(devId);  // 👈 Add await
+     const DevEmail = developer.email;
+     const devName = developer.firstName + " " + developer.lastName;
+      const templateName = request.name;
+
+      await mailSender(DevEmail, "🎉 Your Template is Approved!", templateApprovedMail(devName,templateName));
+    
+    }
+
+    if (action == "Rejected") {
+      const devId = request.createdBy;
+      
+     const developer = await User.findById(devId);  // 👈 Add await
+     const DevEmail = developer.email;
+     const devName = developer.firstName + " " + developer.lastName;
+      const templateName = request.name;
+
+      await mailSender(DevEmail, "😔 Your Template is  Rejected !", templateRejectedMail(devName,templateName));
+    
+    }
+    
+
+   
+
+    return res.status(200).json({
+      success: true,
+      message: `Template request ${action.toLowerCase()} successfully.`,
+  
+    });
+
+  } catch (error) {
+    console.error("Review template error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+exports.getDeveloperRequestedTemplates = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "requestedTemplate",
+        model: "DeveloperTemplateRequest",
+      })
+      .select("requestedTemplate");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      templates: user.requestedTemplate,
+    });
+  } catch (error) {
+    console.error("Error fetching developer templates:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching templates.",
+    });
+  }
+};
+
+
+exports.getDeveloperTemplateStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "requestedTemplate",
+        model: "DeveloperTemplateRequest",
+        select: "status", 
+      })
+      .select("requestedTemplate");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    const templates = user.requestedTemplate;
+
+    // Count templates by status
+    const total = templates.length;
+    const approved = templates.filter(t => t.status === "Approved").length;
+    const pending = templates.filter(t => t.status === "Pending").length;
+    const rejected = templates.filter(t => t.status === "Rejected").length;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        total,
+        approved,
+        pending,
+        rejected,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching developer template stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching template stats.",
+    });
+  }
+};
+
+exports.getDeveloperTemplateUsageStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get all templates created by this dev (Approved & added by admin)
+    const templates = await Template.find({CreatedBy: userId });
+
+    // console.log("ye dekh lete h ",templates)
+
+    // Map through each and count how many portfolios used it
+    const stats = await Promise.all(
+      templates.map(async (template) => {
+        const count = await Portfolio.countDocuments({ templateId: template._id });
+
+        return {
+          templateId: template._id,
+          name: template.name,
+          usageCount: count,
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, stats });
+  } catch (err) {
+    console.error("Error getting usage stats:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+
+exports.getMonthlyRequestedTemplates = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+
+    const templates = await DeveloperTemplateRequest.find({
+      createdBy: userId,
+      createdAt: { $gte: startOfYear },
+    });
+
+    const monthlyData = Array(12).fill(0);
+
+    templates.forEach((template) => {
+      const month = new Date(template.createdAt).getMonth();
+      monthlyData[month]++;
+    });
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    const response = monthNames.map((month, index) => ({
+      month,
+      count: monthlyData[index],
+    }));
+
+    res.status(200).json({ success: true, data: response });
+  } catch (err) {
+    console.error("Error fetching monthly requested templates:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+
+
+exports.getTopUsedTemplates = async (req, res) => {
+  try {
+    const result = await Template.aggregate([
+      {
+        $project: {
+          name: 1,
+          previewImage: 1,
+          usageCount: { $size: { $ifNull: ["$usage", []] } },
+        },
+      },
+      { $sort: { usageCount: -1 } },
+      { $limit: 5 },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Top 5 templates fetched",
+      data: result,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching templates",
+    });
+  }
+};
+
+
+
+exports.getAllRequestedTemplates = async (req, res) => {
+  try {
+    const templates = await DeveloperTemplateRequest.find()
+      .sort({ createdAt: -1 }) // Latest first
+      .select("_id name description previewUrl uploadedUrl createdBy status createdAt reviewedAt")
+      .populate("createdBy", "firstName lastName")
+
+
+    res.status(200).json({ success: true, templates });
+  } catch (error) {
+    console.error("Error fetching requested templates:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 

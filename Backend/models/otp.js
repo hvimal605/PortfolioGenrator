@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const mailSender = require("../utils/mailSender");
+const otpTemplate = require("../mail/templates/EmailVerificationTemplate");
 
 
 const OTPSchema = new mongoose.Schema({
@@ -23,7 +24,7 @@ const OTPSchema = new mongoose.Schema({
 // a function -> to send emails
 async function sendVerificationEmail(email, otp) {
     try {
-        const mailResponse = await mailSender(email, "Verification Email from HarshPortfolioGenrator", otp);
+        const mailResponse = await mailSender(email, "Verification Email from HarshPortfolioGenrator", otpTemplate(otp));
         console.log('email send successfully :', mailResponse);
 
 

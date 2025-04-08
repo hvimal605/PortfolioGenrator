@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { auth } = require("../middlewares/auth");
-const {  deployPortfolio, updatelink, createSite} = require("../controller/deploy");
+const {   updatelink,  deployPortfolio,} = require("../controller/deploy");
 
 
 
@@ -12,9 +12,10 @@ const {  deployPortfolio, updatelink, createSite} = require("../controller/deplo
 
 
 
-router.post("/deployPortfolio", auth , deployPortfolio);
+
+router.post("/deployPortfolio", auth , deployPortfolio );
 router.patch("/updatelink", auth , updatelink);
-router.post("/createSite",auth , createSite)
+// router.post("/createSite",auth , createSite)
 
 
 module.exports = router;

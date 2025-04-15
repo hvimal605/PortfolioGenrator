@@ -1,7 +1,7 @@
 
 const express = require("express")
 const { auth, isAdmin } = require("../middlewares/auth")
-const { createPortfolio, addPortfolioDetails, getPortfolioDetailsById, getPortfolioBySlug, getPortfoliosForUser, trackVisitofPortfolio, getVisitorStats, getallstats, getMonthlyUserDeveloperPortfolioStats } = require("../controller/Portfolio")
+const { createPortfolio, addPortfolioDetails, getPortfolioDetailsById, getPortfolioBySlug, getPortfoliosForUser, trackVisitofPortfolio, getVisitorStats, getallstats, getMonthlyUserDeveloperPortfolioStats, updatePortfolioDetails } = require("../controller/Portfolio")
 
 const router = express.Router()
 
@@ -10,6 +10,7 @@ const router = express.Router()
 
 
 router.post("/createPortfolio",auth, createPortfolio)
+router.put("/updatePorfolioDetails",auth, updatePortfolioDetails)
 // router.post("/addPortfolioDetails",auth, addPortfolioDetails)
 router.post("/getPortfolioFullDetails", getPortfolioDetailsById)
 router.post("/portfoliodetailsBySlug", getPortfolioBySlug); 

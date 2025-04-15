@@ -99,39 +99,61 @@ exports.deleteSkill = async (req, res) => {
 
 exports.updateSkill = async (req, res) => {
     try {
-        const { skillId } = req.body;
-        let skilldetail = await skill.findById(skillId);
-        if (!skilldetail) {
+        const { skillId, proficiency } = req.body;
+
+        let skillDetail = await skill.findById(skillId);
+        if (!skillDetail) {
             return res.status(400).json({
                 success: false,
-                message: "skill not found"
+                message: "Skill not found"
             });
         }
-        const { proficiency } = req.body;
-        skilldetail = await skill.findByIdAndUpdate(
-            skillId,
-            { proficiency },
-            {
-                new: true,
-                runValidators: true,
-                useFindAndModify: false,
+
+        const updateData = { proficiency };
+
+        // Handle image update if provided
+        if (req.files && req.files.svg) {
+            const svgFile = req.files.svg;
+
+            // Delete old image from Cloudinary
+            if (skillDetail.svg && skillDetail.svg.public_id) {
+                await cloudinary.uploader.destroy(skillDetail.svg.public_id);
             }
-        );
-        res.status(200).json({
+
+            // Upload new image
+            const uploadedImage = await uploadImageToCloudinary(
+                svgFile,
+                process.env.FOLDER_NAME,
+                1000,
+                1000
+            );
+
+            updateData.svg = {
+                public_id: uploadedImage.public_id,
+                url: uploadedImage.secure_url,
+            };
+        }
+
+        // Update skill
+        skillDetail = await skill.findByIdAndUpdate(skillId, updateData, {
+            new: true,
+        });
+
+        return res.status(200).json({
             success: true,
-            message: "Skill Updated!",
-            skilldetail,
-        })
-    }
-    catch (error) {
-        console.log(error);
+            message: "Skill updated!",
+            skillDetail,
+        });
+
+    } catch (error) {
+        console.error(error);
         return res.status(500).json({
             success: false,
-            message: 'Something went wrong while updating skill'
+            message: "Something went wrong while updating skill",
         });
     }
-
 };
+
 
 exports.getAllSkill = async (req, res) => {
     try {

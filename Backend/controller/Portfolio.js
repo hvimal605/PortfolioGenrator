@@ -202,7 +202,6 @@ exports.createPortfolio = async (req, res) => {
       });
     }
 
-    // Validate file uploads
     const avatar = req.files?.avatar;
     const resume = req.files?.resume;
     if (!avatar || !resume) {
@@ -212,7 +211,6 @@ exports.createPortfolio = async (req, res) => {
       });
     }
 
-    // Upload profile image to Cloudinary
     const profileImageUpload = await uploadImageToCloudinary(
       avatar,
       process.env.FOLDER_NAME,
@@ -220,13 +218,11 @@ exports.createPortfolio = async (req, res) => {
       1000
     );
 
-    // Upload resume to Cloudinary
     const resumeUpload = await uploadImageToCloudinary(
       resume,
       process.env.FOLDER_NAME
     );
 
-    // **Generate a Unique Slug**
     if (!FirstName) {
       return res.status(400).json({ success: false, message: "FirstName is required to generate slug." });
     }
@@ -247,10 +243,9 @@ exports.createPortfolio = async (req, res) => {
       projects: [],
       softwareApplications: [],
       timeline: [],
-      slug, // 🔥 Set the unique slug before saving
+      slug, 
     });
 
-    // Push portfolio to user portfolio array
     await User.findByIdAndUpdate(userId, { $push: { portfolios: portfolio._id } });
 
     res.status(201).json({
@@ -266,6 +261,95 @@ exports.createPortfolio = async (req, res) => {
     });
   }
 };
+
+exports.updatePortfolioDetails = async (req, res) => {
+  try {
+    const {
+      portfolioId,
+      FirstName,
+      LastName,
+      phone,
+      email,
+      address,
+      linkedIn,
+      github,
+      twitter,
+      personalWebsite,
+    } = req.body;
+
+    if (!portfolioId) {
+      return res.status(400).json({
+        success: false,
+        message: "Portfolio ID is required.",
+      });
+    }
+
+    const portfolio = await Portfolio.findById(portfolioId);
+    if (!portfolio) {
+      return res.status(404).json({
+        success: false,
+        message: "Portfolio not found.",
+      });
+    }
+
+    // Handle optional file uploads
+    const avatar = req.files?.avatar;
+    const resume = req.files?.resume;
+
+    let profileImageUrl = portfolio.profileImage;
+    let resumeUrl = portfolio.resume;
+
+    if (avatar) {
+      const profileImageUpload = await uploadImageToCloudinary(
+        avatar,
+        process.env.FOLDER_NAME,
+        1000,
+        1000
+      );
+      profileImageUrl = profileImageUpload.secure_url;
+    }
+
+    if (resume) {
+      const resumeUpload = await uploadImageToCloudinary(
+        resume,
+        process.env.FOLDER_NAME
+      );
+      resumeUrl = resumeUpload.secure_url;
+    }
+
+    // Update portfolio fields
+    portfolio.FirstName = FirstName || portfolio.FirstName;
+    portfolio.LastName = LastName || portfolio.LastName;
+    portfolio.profileImage = profileImageUrl;
+    portfolio.resume = resumeUrl;
+    portfolio.contactDetails = {
+      phone: phone || portfolio.contactDetails.phone,
+      email: email || portfolio.contactDetails.email,
+      address: address || portfolio.contactDetails.address,
+    };
+    portfolio.socialLinks = {
+      linkedIn: linkedIn || portfolio.socialLinks.linkedIn,
+      github: github || portfolio.socialLinks.github,
+      twitter: twitter || portfolio.socialLinks.twitter,
+      personalWebsite: personalWebsite || portfolio.socialLinks.personalWebsite,
+    };
+
+    await portfolio.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Portfolio updated successfully!",
+      portfolio,
+    });
+  } catch (error) {
+    console.error("Error updating portfolio:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
+  }
+};
+
 
 
 exports.getPortfolioDetailsById = async (req, res) => {

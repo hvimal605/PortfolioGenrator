@@ -20,7 +20,7 @@ exports.addNewProject = async (req, res) => {
             description,
             gitRepoLink,
             projectLink,
-            
+
             technologies,
             deployed,
             portfolioId
@@ -31,16 +31,16 @@ exports.addNewProject = async (req, res) => {
             description,
             gitRepoLink,
             projectLink,
-           
+
             technologies,
-          portfolioId)
+            portfolioId)
 
         if (
             !title ||
             !description ||
             !gitRepoLink ||
             !projectLink ||
-           
+
             !technologies
         ) {
             return res.status(400).json({
@@ -53,7 +53,7 @@ exports.addNewProject = async (req, res) => {
             projectBanner,
             process.env.FOLDER_NAME,
             1000,
-            1000
+            100
         );
 
         // Create a new project with the provided details
@@ -62,7 +62,7 @@ exports.addNewProject = async (req, res) => {
             description,
             gitRepoLink,
             projectLink,
-           
+
             technologies,
             deployed,
             projectBanner: {
@@ -98,38 +98,52 @@ exports.addNewProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
     try {
         const { ProjectId, portfolioId } = req.body;
+
+        // Validate inputs
+        if (!ProjectId || !portfolioId) {
+            return res.status(400).json({
+                success: false,
+                message: "ProjectId and portfolioId are required",
+            });
+        }
+
         const projectRes = await project.findById(ProjectId);
         if (!projectRes) {
-            return res.status(402).josn({
+            return res.status(404).json({
                 success: false,
-                message: "Already Deleted!"
-            })
+                message: "Project not found or already deleted",
+            });
         }
-        const projectImageId = projectRes.projectBanner.public_id;
-        await cloudinary.uploader.destroy(projectImageId);
+
+        // Delete the project banner from Cloudinary (only if exists)
+        const projectImageId = projectRes.projectBanner?.public_id;
+        if (projectImageId) {
+            await cloudinary.uploader.destroy(projectImageId);
+        }
+
+        // Delete the project document
         await projectRes.deleteOne();
 
-        const portfolio = await Portfolio.findByIdAndUpdate(
+        // Update the portfolio document
+        await Portfolio.findByIdAndUpdate(
             portfolioId,
             { $pull: { projects: ProjectId } },
             { new: true }
         );
 
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            message: "Project Deleted!",
+            message: "Project deleted successfully!",
         });
-
-
     } catch (error) {
-        console.error(error);
+        console.error("Error deleting project:", error);
         return res.status(500).json({
             success: false,
-            message: 'Something went wrong while delete a Project'
+            message: "Something went wrong while deleting the project",
         });
     }
 };
+
 
 
 exports.upadteProject = async (req, res) => {
@@ -137,18 +151,18 @@ exports.upadteProject = async (req, res) => {
         const newProjectData = {
             title: req.body.title,
             description: req.body.description,
-            stack: req.body.stack,
+
             technologies: req.body.technologies,
-            deployed: req.body.deployed,
+
             projectLink: req.body.projectLink,
             gitRepoLink: req.body.gitRepoLink,
         };
-        const {projectId} = req.body
-        if(!projectId){
+        const { projectId } = req.body
+        if (!projectId) {
             return res.status(400).json({
                 success: true,
                 message: "Please give project id.",
-                
+
             });
         }
         if (req.files && req.files.projectBanner) {
@@ -212,18 +226,18 @@ exports.getAllProject = async (req, res) => {
 
 exports.getSingleProject = async (req, res) => {
     try {
-        const {projectId} = req.body;
-        if(!projectId){
+        const { projectId } = req.body;
+        if (!projectId) {
             return res.status(400).json({
-                success:false,
-                message:"Please provide project Id."
+                success: false,
+                message: "Please provide project Id."
             })
         }
         const projectRes = await project.findById(projectId);
-        if(!projectRes){
+        if (!projectRes) {
             return res.status(400).json({
-                success:false,
-                message:"Proejct not found."
+                success: false,
+                message: "Proejct not found."
             })
         }
         res.status(200).json({

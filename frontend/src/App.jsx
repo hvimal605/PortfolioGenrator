@@ -24,7 +24,7 @@ import VerifyEmail from './Pages/VerifyEmail.jsx';
 
 
 const App = () => {
-  const googleClientId = '1033292722241-krp9mkas7m7sjehmh71bcceqfh1ilmts.apps.googleusercontent.com'
+
   return (
     <div className=''>
 

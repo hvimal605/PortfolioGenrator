@@ -27,16 +27,20 @@ export const TemplateEndpoints = {
 }
 
 export const TimelineEndpoints = {
-  Create_Timeline: BASE_URL +"/timeline/createTimeline"
+  Create_Timeline: BASE_URL +"/timeline/createTimeline",
+  Delete_Timeline:BASE_URL +"/timeline/deleteTimeline",
  }
 
  export const skillEndpoints = {
-  Add_Skill: BASE_URL +"/skill/addSkill"
+  Add_Skill: BASE_URL +"/skill/addSkill",
+  Delete_Skill: BASE_URL +"/skill/deleteSkill",
+  UPDATE_SKILL_API_URL: BASE_URL +"/skill/updateSkill",
  }
 
  export const portfolioEndpoints = {
   GET_PORTFOLIO_FULL_DETAILS_BYID: BASE_URL +"/portfolio/getPortfolioFullDetails",
   CREATE_PORTFOLIO:BASE_URL+"/portfolio/createPortfolio",
+  UPDATE_PORTFOLIO_DETAILS:BASE_URL+"/portfolio/updatePorfolioDetails",
   DEPLOY_PORTFOLIO:BASE_URL+"/deploy/deployPortfolio",
   GET_PORTFOIOS_FOR_USER:BASE_URL+"/portfolio/portfoliosForUser",
    GET_Portfolio_VisitorStats :BASE_URL +"/portfolio/getPortfolioVisitorStats",
@@ -45,11 +49,15 @@ export const TimelineEndpoints = {
  }
 
  export const SoftwareAppEndpoints ={
-   ADD_SOFTWARE_APPLICATION: BASE_URL + "/softwareApplication/addsoftwareApplication"
+   ADD_SOFTWARE_APPLICATION: BASE_URL + "/softwareApplication/addsoftwareApplication",
+   Delete_Software_Application: BASE_URL + "/softwareApplication/deletesoftwareApplication",
+   UPDATE_SOFTWARE_APP_API_URL: BASE_URL + "/softwareApplication/updatesoftwareApplication",
  }
 
  export const projectEndpoints ={
-  ADD_PROJECT: BASE_URL + "/project/addProject"
+  ADD_PROJECT: BASE_URL + "/project/addProject",
+  Delete_Project: BASE_URL + "/project/deleteProject",
+  UPDATE_PROJECT_API_URL: BASE_URL + "/project/updateProject",
 }
 
 export const messgaeEndPoints = {

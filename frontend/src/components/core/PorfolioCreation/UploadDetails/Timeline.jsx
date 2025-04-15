@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 const Timeline = () => {
   const { token } = useSelector((state) => state.auth);
   const {portfolio} = useSelector((state)=>state.portfolio)
-  console.log("ye aagya porfolio ",portfolio)
+  // console.log("ye aagya porfolio time line ke ander  ",portfolio)
 
 
   const [timeLine, setTimeLine] = useState({
@@ -23,7 +23,7 @@ const Timeline = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const portfolioId = localStorage.getItem("portfolioId");
+    const portfolioId = portfolio._id;
     if (!portfolioId) {
       toast.error("Portfolio ID not found. Please try again.");
       return;

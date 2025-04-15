@@ -5,11 +5,15 @@ import { IoMdMenu } from "react-icons/io";
 import Settings from "../components/core/Developer/Settings";
 import MessagingInsights from "../components/core/UserDashboard/MessagingInsights.jsx";
 import MyPortfolios from "../components/core/UserDashboard/MyPortfolios";
+import ManagePortfolios from "../components/core/UserDashboard/ManagePortfolios.jsx";
+import { RxUpdate } from "react-icons/rx";
 
 const tabs = [
   { tab: "My Portfolios", icon: <MdLibraryBooks className="mr-2" /> },
+  { tab: "ManagePorfolio", icon: <RxUpdate  className="mr-2" /> },
   { tab: "MessageInsights", icon: <MdMessage className="mr-2" /> },
   { tab: "Settings", icon: <FiSettings className="mr-2" /> },
+  
 ];
 
 const UserDashboard = () => {
@@ -63,6 +67,7 @@ const UserDashboard = () => {
       <main className="flex-1 overflow-auto p-4 md:p-6 bg-black/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto">
           {activeTab === "My Portfolios" && <MyPortfolios />}
+          {activeTab === "ManagePorfolio" && <ManagePortfolios />}
           {activeTab === "MessageInsights" && <MessagingInsights />}
           {activeTab === "Settings" && <Settings />}
         </div>

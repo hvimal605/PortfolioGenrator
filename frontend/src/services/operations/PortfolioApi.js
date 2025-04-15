@@ -3,16 +3,20 @@ import { messgaeEndPoints, portfolioEndpoints, projectEndpoints, skillEndpoints,
 import { apiConnector } from "../apiConnector";
 
 const {
-  Create_Timeline
+  Create_Timeline,
+  Delete_Timeline
 } = TimelineEndpoints
 
 const {
-  Add_Skill
+  Add_Skill,
+  Delete_Skill,
+  UPDATE_SKILL_API_URL
 } = skillEndpoints
 
 const {
   GET_PORTFOLIO_FULL_DETAILS_BYID,
   CREATE_PORTFOLIO,
+  UPDATE_PORTFOLIO_DETAILS,
   DEPLOY_PORTFOLIO,
   GET_PORTFOIOS_FOR_USER,
   GET_Portfolio_VisitorStats,
@@ -21,13 +25,15 @@ const {
 } = portfolioEndpoints
 
 const {
-  ADD_PROJECT
+  ADD_PROJECT,
+  Delete_Project,
+  UPDATE_PROJECT_API_URL
 } = projectEndpoints
 
 const { GET_ALL_MESSAGES , DELETE_MESSAGE ,TOGGLE_EMAIL_NOTIFICATION} = messgaeEndPoints
 
 
-const { ADD_SOFTWARE_APPLICATION } = SoftwareAppEndpoints
+const { ADD_SOFTWARE_APPLICATION, Delete_Software_Application ,UPDATE_SOFTWARE_APP_API_URL } = SoftwareAppEndpoints
 
 
 export const createTimeline = async (timelineData, token) => {
@@ -59,6 +65,34 @@ export const createTimeline = async (timelineData, token) => {
 
 };
 
+export const deleteTimeline = async ({ Timelineid, portfolioId, token }) => {
+  const toastId = toast.loading("Deleting Timeline...");
+
+  try {
+    const response = await apiConnector("DELETE", Delete_Timeline, { Timelineid, portfolioId }, {
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log("Delete Timeline Response:", response);
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could not delete timeline.");
+    }
+
+    toast.success("Timeline deleted!");
+    return true;
+
+  } catch (error) {
+    console.error("DELETE_TIMELINE_API ERROR:", error);
+    toast.error(error.message || "Something went wrong while deleting the timeline");
+    return false;
+
+  } finally {
+    toast.dismiss(toastId);
+  }
+};
+
+
 
 export const addSkill = async (skillData, token) => {
   const toastId = toast.loading("Adding Skill...");
@@ -85,6 +119,72 @@ export const addSkill = async (skillData, token) => {
   toast.dismiss(toastId);
 };
 
+
+export const deleteSkill = async ({ skillId, portfolioId, token }) => {
+  const toastId = toast.loading("Deleting Skill...");
+
+  try {
+    const response = await apiConnector(
+      "DELETE",
+      Delete_Skill,
+      { Skillid: skillId, portfolioId },
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    console.log("Delete Skill Response:", response);
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could not delete skill.");
+    }
+
+    toast.success("Skill deleted!");
+    return true;
+
+  } catch (error) {
+    console.error("DELETE_SKILL_API ERROR:", error);
+    toast.error(error.message || "Something went wrong while deleting the skill");
+    return false;
+
+  } finally {
+    toast.dismiss(toastId);
+  }
+};
+
+export const updateSkill = async (formData, token) => {
+  let result = null;
+  const toastId = toast.loading("Updating skill...");
+
+  try {
+    // Send the API request to update the skill with FormData
+    const response = await apiConnector("PUT", UPDATE_SKILL_API_URL, formData, {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log("UPDATE_SKILL API RESPONSE:", response);
+
+    if (!response?.data?.success) {
+      throw new Error("Failed to update skill");
+    }
+
+    toast.success(response.data.message || "Skill updated successfully");
+    result = response.data;
+  } catch (error) {
+    console.error("UPDATE_SKILL ERROR:", error);
+    toast.error(error.message || "Something went wrong while updating skill");
+  }
+
+  toast.dismiss(toastId);
+  return result;
+};
+
+
+
+
+
+
 export const addSoftwareApplication = async (softwareData, token) => {
   const toastId = toast.loading("Adding Software Application...");
   // console.log("dekhte to kiya arah hai bhai ", softwareData, token)
@@ -110,6 +210,67 @@ export const addSoftwareApplication = async (softwareData, token) => {
   toast.dismiss(toastId);
 };
 
+export const deleteSoftwareApp = async ({ softwareId, portfolioId, token }) => {
+  const toastId = toast.loading("Deleting Software Application...");
+
+  try {
+    const response = await apiConnector(
+      "DELETE",
+      Delete_Software_Application, 
+      { applicationId: softwareId, portfolioId },
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    console.log("Delete Software Application Response:", response);
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could not delete software application.");
+    }
+
+    toast.success("Software Application deleted!");
+    return true;
+
+  } catch (error) {
+    console.error("DELETE_SOFTWARE_APP_API ERROR:", error);
+    toast.error(error.message || "Something went wrong while deleting the software application");
+    return false;
+
+  } finally {
+    toast.dismiss(toastId);
+  }
+};
+
+export const updateSoftwareApp = async (formData, token) => {
+  let result = null;
+  const toastId = toast.loading("Updating software application...");
+
+  try {
+    // Send the API request to update the software application with FormData
+    const response = await apiConnector("PUT", UPDATE_SOFTWARE_APP_API_URL, formData, {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log("UPDATE_SOFTWARE_APP API RESPONSE:", response);
+
+    if (!response?.data?.success) {
+      throw new Error("Failed to update software application");
+    }
+
+    toast.success(response.data.message || "Software application updated successfully");
+    result = response.data;
+  } catch (error) {
+    console.error("UPDATE_SOFTWARE_APP ERROR:", error);
+    toast.error(error.message || "Something went wrong while updating the software application");
+  }
+
+  toast.dismiss(toastId);
+  return result;
+};
+
+
 export const addProject = async (projectData, token) => {
   const toastId = toast.loading("Adding Project ...");
 
@@ -133,6 +294,71 @@ export const addProject = async (projectData, token) => {
 
   toast.dismiss(toastId);
 };
+
+
+
+export const deleteProject = async ({ projectId, portfolioId, token }) => {
+  const toastId = toast.loading("Deleting Project...");
+
+  try {
+    const response = await apiConnector(
+      "DELETE",
+      Delete_Project, // Make sure this is correctly imported and points to the right endpoint
+      { ProjectId: projectId, portfolioId },
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    console.log("Delete Project Response:", response);
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could not delete project.");
+    }
+
+    toast.success("Project deleted!");
+    return true;
+
+  } catch (error) {
+    console.error("DELETE_PROJECT_API ERROR:", error);
+    toast.error(error.message || "Something went wrong while deleting the project");
+    return false;
+
+  } finally {
+    toast.dismiss(toastId);
+  }
+};
+
+export const updateProject = async (formData, token) => {
+  let result = null;
+  const toastId = toast.loading("Updating project...");
+
+  try {
+    // Send the API request to update the project with FormData
+    const response = await apiConnector("PUT", UPDATE_PROJECT_API_URL, formData, {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log("UPDATE_PROJECT API RESPONSE: ", response);
+
+    if (!response?.data?.success) {
+      throw new Error("Failed to update project");
+    }
+
+    toast.success(response.data.message || "Project updated successfully");
+    result = response.data;
+  } catch (error) {
+    console.error("UPDATE_PROJECT ERROR: ", error);
+    toast.error(error.message || "Something went wrong");
+  }
+
+  toast.dismiss(toastId);
+  return result;
+};
+
+
+
 
 export const addPersonalDetails = async (personalData, token) => {
   let result = null
@@ -161,6 +387,35 @@ export const addPersonalDetails = async (personalData, token) => {
   toast.dismiss(toastId);
   return result
 };
+
+export const updatePortfolioDetails = async (formData, token) => {
+  let result = null;
+  const toastId = toast.loading("Updating portfolio...");
+
+  try {
+    // Send the API request to update the portfolio with FormData
+    const response = await apiConnector("PUT",UPDATE_PORTFOLIO_DETAILS , formData, {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log("UPDATE_PORTFOLIO_DETAILS RESPONSE:", response);
+
+    if (!response?.data?.success) {
+      throw new Error("Failed to update portfolio");
+    }
+
+    toast.success(response.data.message || "Portfolio updated successfully");
+    result = response.data;
+  } catch (error) {
+    console.error("UPDATE_PORTFOLIO_DETAILS ERROR:", error);
+    toast.error(error.message || "Something went wrong while updating portfolio");
+  }
+
+  toast.dismiss(toastId);
+  return result;
+};
+
 
 
 

@@ -8,6 +8,8 @@ import { useSelector } from "react-redux";
 
 const ProjectForm = () => {
   const { token } = useSelector((state) => state.auth);
+  const {portfolio} = useSelector((state)=>state.portfolio)
+    const portfolioId = portfolio._id;
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
   const [project, setProject] = useState({
     title: "",
@@ -38,7 +40,6 @@ const ProjectForm = () => {
       return;
     }
 
-    const portfolioId = localStorage.getItem("portfolioId");
     if (!portfolioId) {
       toast.error("Portfolio ID not found. Please try again.");
       return;

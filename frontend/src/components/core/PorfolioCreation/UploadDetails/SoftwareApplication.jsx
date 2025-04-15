@@ -7,6 +7,8 @@ import { addSoftwareApplication } from "../../../../services/operations/Portfoli
 
 const SoftwareApplicationForm = () => {
   const { token } = useSelector((state) => state.auth);
+  const {portfolio} = useSelector((state)=>state.portfolio)
+    const portfolioId = portfolio._id;
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
 
 
@@ -35,7 +37,6 @@ const SoftwareApplicationForm = () => {
       return;
     }
 
-    const portfolioId = localStorage.getItem("portfolioId");
     if (!portfolioId) {
       toast.error("Portfolio ID not found. Please try again.");
       return;
@@ -49,11 +50,10 @@ const SoftwareApplicationForm = () => {
     try {
       await addSoftwareApplication(formData, token);
 
-      // ✅ Reset form fields
       setApplication({ name: "", applicationSvg: null });
       setValue("applicationSvg", null);
-      setValue("name", ""); // Reset the name field
-      onFileSelect(null); // Reset file in Upload component
+      setValue("name", ""); 
+      onFileSelect(null); 
     } catch (error) {
       console.error("Error submitting form:", error);
     }

@@ -8,6 +8,8 @@ import Upload from "../../../common/Upload";
 
 const SkillForm = () => {
   const { token } = useSelector((state) => state.auth);
+  const {portfolio} = useSelector((state)=>state.portfolio)
+  const portfolioId = portfolio._id;
     const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
 
   const [skill, setSkill] = useState({
@@ -35,8 +37,6 @@ const SkillForm = () => {
       alert("Please upload a skill image file.");
       return;
     }
-
-    const portfolioId = localStorage.getItem("portfolioId");
     if (!portfolioId) {
       toast.error("Portfolio ID not found. Please try again.");
       return;

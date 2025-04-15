@@ -24,34 +24,14 @@ database.connect()
 
 app.use(express.json())
 app.use(cookieParser())
-// app.use(
-//     cors({
-//         origin: "*",
-//         credentials: true,
-//     })
-// )
+app.use(
+    cors({
+        origin: "*",
+        credentials: true,
+    })
+)
 
-app.use(cors({
-    origin: function (origin, callback) {
-      // Allow localhost during dev
-      if (!origin || origin.startsWith("http://localhost:")) {
-        return callback(null, true);
-      }
-  
-      // Allow any Vercel frontends
-      if (
-        origin.endsWith(".vercel.app") ||
-        origin.endsWith(".netlify.app") ||
-        origin.includes("your-custom-domain.com")
-      ) {
-        return callback(null, true);
-      }
-  
-      // Else: block it
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  }));
+
   
 
 

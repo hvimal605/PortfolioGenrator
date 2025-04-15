@@ -8,6 +8,7 @@ const mailSender = require('../utils/mailSender');
 exports.sendMessage = async (req, res) => {
     try {
         const { senderName, subject, message, email, slug } = req.body;
+        console.log("ye sb check kro", senderName, subject, message, email, slug)
 
         if (!senderName || !subject || !message || !email || !slug) {
             return res.status(400).json({ success: false, message: "All fields are required!" });
